@@ -1,0 +1,199 @@
+
+
+
+
+#ifdef MASTER
+
+
+  
+
+  
+  
+#else
+ 
+
+#endif
+
+void sdsasdetup() {
+
+  pinMode(PIN_BOMBA,OUTPUT);     digitalWrite(PIN_BOMBA, OFF);
+  
+  #ifdef  MASTER
+
+  #endif
+  for (byte i=menorSetor; i<=maiorSetor; i++) {
+    pinMode(PIN_SETORES[i], OUTPUT); 
+    digitalWrite(PIN_SETORES[i],CLOSED);
+  }
+  
+    delay(30);
+  Serial.begin(115200);
+  delay(30);
+  Serial.println();
+ 
+    Serial.println("Iniciando controle da irrigacao SLAVE");
+  
+
+  resetTemposSetores();
+
+  
+  server.on("/getstatus",getStatus);
+  
+
+    Definir rotina para tratar comando
+
+
+  server.onNotFound ( serverHandleNotFound );  
+  
+ 
+
+}
+
+void loop() {
+  byte connectionStatus;
+  
+  horaAtual = (nowEpoch%86400L) / 3600;
+  minAtual  = (nowEpoch%3600)/60;
+  diaSemanaAtual = ((nowEpoch%604800L)/86400L + 4) % 7;
+
+  server.handleClient();
+  
+
+
+  switch (connectionStatus = checkWiFiConnection()) {
+    static unsigned long int lastPingTry = 0;
+    case 0: // no connection
+      break;
+
+    case 1: {// just connected
+      #ifdef MASTER
+        syncHour();
+      #endif
+
+      httpUpdater.setup(&server);
+      server.begin();
+      IPAddress ipa = WiFi.localIP();
+      #ifdef MASTER
+//        sprintf(slaveAddr,"%d.%d.%d.%d",(int)ipa[0],(int)ipa[1],(int)ipa[2],(int)ipa[3]+1);
+        Serial.printf("Slave precisa estar no IP: %s\n\r",slaveAddr);
+//        sprintf(caixaAddr,"%d.%d.%d.%d",(int)ipa[0],(int)ipa[1],(int)ipa[2],(int)ipa[3]+2);
+        Serial.printf("Caixa precisa estar no IP: %s\n\r",caixaAddr);
+        Serial.printf("Meterorologica precisa estar no IP: %s\n\r",meterorologicaAddr);
+      #endif
+    }
+    break;
+
+    case 2: // still connected
+      #ifdef MASTER
+        if (Epoch==0) {
+          syncHour();
+          Serial.println("Sync");
+        }
+          
+        if (Epoch != 0) {
+          unsigned long int last_nowEpoch = nowEpoch;
+          nowEpoch = Epoch + (millis() - EpochMillis)/1000;
+          if (nowEpoch<last_nowEpoch) 
+            syncHour();
+
+          dia = nowEpoch/(86400L); 
+
+          if (ultDia==0)
+            ultDia = dia;
+          if (dia>ultDia) {
+            Serial.println("Iniciando novo dia");
+            ultDia = dia;
+          }
+        }
+        int hr=(nowEpoch  % 86400L) / 3600;
+        
+        if (!quandoDesligarBomba && !setorAtual) {
+          lePrevisao();
+          leChuva();
+          leCaixa();
+          processaThingSpeak();
+        }
+      #endif
+      break;
+  } // switch
+
+  processaBomba();
+  processaSetores();
+    
+  
+  
+  
+  //--------------------- Controle de status
+  
+  status = "Status: ";
+  if (quandoDesligarBomba!=0) {
+    status += "Bomba ligada por mais " + String ((quandoDesligarBomba-millis())/1000) + " seg";
+  }
+  else
+    status += "Bomba desligada";
+    
+  status += " -- ";
+  
+  if (setorAtual)
+    status += "setor " + String(setorAtual) + " ativo por mais " +String(setorAtualResta/1000)+ " seg";
+  else
+    status += "nenhum setor ativo";
+    
+      
+
+
+
+  //--------------------------------------------- Controle led
+  byte led;
+  if (connectionStatus==0)
+    led = millis() % 200 < 100;
+  else {
+    if (connectionStatus==2) {
+      int x = millis() % 2000;
+      byte cycle = x / 100;
+      if (quandoDesligarBomba>0)
+        led = (cycle < 2) || (cycle >=10 &&cycle<12);
+      else
+        led = (cycle < 10);
+    }
+    else 
+      led = millis() % 1000 < 10 || (millis() % 1000 > 200 &&  millis() % 1000 <210);
+  }
+}
+
+
+/****
+d1 - 220v
+d2 - partida
+
+
+D5 - 
+D6 - 
+D7 -
+D8 -
+D0
+
+
+https://www.google.com/url?sa=i&url=https%3A%2F%2Fcommunity.home-assistant.io%2Ft%2Fesp8266-relay-active-low-how-to-prevent-triggering-on-boot-or-reset-solved%2F88279&psig=AOvVaw3zRqCzzHlLDQb6dX-94Bst&ust=1607948775076000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCNDdlY76yu0CFQAAAAAdAAAAABAD
+
+
+
+formatar uptime e hora corrente
+apresentar status dos relés e flags
+
+testar caso de ficar sem hora
+
+implementar eventos de resposta
+tentar tirar IPs fixos
+
+gravar dados em memória não volátil https://forum.arduino.cc/index.php?topic=491469.0
+
+
+http://api.openweathermap.org/data/2.5/forecast?lat=-22.367&lon=-43.183&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=xml
+
+RETORNO VAZIO NO getString da previsão:
+https://github.com/esp8266/Arduino/pull/7691/files/5f8466b70971b72b5b3b801855b11ca2f92d8749
+tem que atualizar biblioteca distribuída pelo arduino.
+
+
+*/

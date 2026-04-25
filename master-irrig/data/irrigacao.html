@@ -1,0 +1,287 @@
+<style>
+html *
+{
+   font-size: 12;
+   font-family: Arial;
+}
+
+.Text {
+  text-align:left;
+}
+
+.ControleButtonClass {
+  font-size: 16;
+  color:gray;
+  border-radius=6px;
+  text-shadow: 0 2px 2px rgba(0,0,0,0.2);
+}
+
+.ControlDiv{
+  position:absolute;
+  overflow:visible;
+  border-radius: 8px;
+  border: 1px solid DimGray;
+  background: Beige;
+  padding: 5px;
+}
+ 
+.weekday{ 
+}
+
+.outdoor{
+}
+
+input[type="number"] {
+   width:40px;
+}
+
+
+input[type="time"] {
+   width:65px;
+}
+
+input[type="checkbox"] {
+   width:10px;
+}
+
+table{
+    border-radius:6px;
+    border-collapse:separate;
+    border-spacing:5px;
+  width: 340;
+  border-style:hidden;
+}
+
+th{
+    border: 0px solid black;
+    border-collapse: collapse;
+      width: 340%;
+    text-align: left;  
+}
+
+td {
+    border: 0px solid black;
+    border-collapse: collapse;
+      width: 330%;
+    text-align: center;  
+}
+
+
+</style>
+
+<script>
+
+nProg=5;
+nSet=12;
+nSetMaster=5;
+addrSlave="http://192.168.29.191";
+
+function atualizaStatusMaster() {
+  var request = new XMLHttpRequest();
+  request.timeout=15000;
+  request.onload = function() {
+    if (request.readyState==4)
+      if (request.status==200) 
+        document.getElementById("statusMaster").innerHTML = request.responseText;
+  }
+  request.open("GET", "getstatus", true);
+  request.send(null);
+}
+
+function atualizaStatusSlave() {
+  var request = new XMLHttpRequest();
+  request.timeout=15000;
+  request.onload = function() {
+    if (request.readyState==4)
+      if (request.status==200) 
+        document.getElementById("statusSlave").innerHTML = request.responseText;
+  }
+  
+  request.open("GET", addrSlave+"/getstatus", true);
+  request.send(null);
+}
+
+function atualizaStatus() {
+  atualizaStatusMaster();
+  //atualizaStatusSlave();
+}
+
+function leProg() {
+  document.getElementById("salvaProgr").disabled=true;
+  var request = new XMLHttpRequest();
+  request.timeout=30000;
+  request.onload = function() {
+    if (request.readyState==4)
+      if (request.status==200) {
+        eval(request.responseText);
+        document.getElementById("salvaProgr").disabled=false;
+      }
+      
+  }
+  
+  request.open("GET", "leProg", true);
+  request.send(null);
+}
+
+
+
+/*
+function atualizaStatus() {
+  document.getElementById("hora").innerHTML = "__/__/____ __:__:__ (uptime ___d __:__:00)"+
+  "<p>&nbsp</p>"+
+  "Status: xxxxxxxxxxxxxxxxxx";
+}
+*/
+
+function ControleButtonVisibility(visible) {
+  if (visible) {
+    controle.style.visibility='visible'; 
+    ControleButton.innerHTML='Controle &#x219f';
+    ProgramaButtonVisibility(0);
+  }
+  else {
+    controle.style.visibility='hidden';
+    ControleButton.innerHTML='Controle &#x21a1';
+  } 
+}
+
+function ProgramaButtonVisibility(visible) {
+  if (visible) {
+    programa.style.visibility='visible'; 
+    ProgramaButton.innerHTML='Programação &#x219f';
+    ControleButtonVisibility(0);
+  }
+  else {
+    programa.style.visibility='hidden';
+    ProgramaButton.innerHTML='Programação &#x21a1';
+  } 
+}
+
+</script>
+
+<body onload="{atualizaStatus();};"> </body>
+
+<head>
+
+<html>
+  <head>
+    <meta name='viewport' content='width=device-width, initial-scale=1' charset="utf-8">  
+    <title>Irrigacao</title>
+    <style>
+      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }
+    </style>
+  </head>
+  <body>
+  <h1>Irrigação Secretoca</h1>
+  <p>&nbsp;</p>
+  
+  <div id="statusMaster" class="text">__/__/____ __:__:__ (uptime ___d __:__:__)</div>
+  
+  <p>&nbsp;</p>
+  
+  <p>
+  <button id="ControleButton" class="ControleButtonClass" onclick="if(controle.style.visibility=='visible') ControleButtonVisibility(0); else ControleButtonVisibility(1);">Controle &#x21a1</button>
+  <button id="ProgramaButton" class="ControleButtonClass" onclick="if(programa.style.visibility=='visible') ProgramaButtonVisibility(0); else {leProg(); ProgramaButtonVisibility(1);}">Programação &#x21a1</button>
+  </p>
+
+  <div id="controle" class="controlDiv" style ='visibility:hidden'>
+    <a href='ligapoco'>Liga poço</a>&emsp;&emsp;&emsp;&emsp;<a href='prograpido'>Programa 1 rápido</a><p>
+    <a href='ligacaixa'>Liga caixa</a>&emsp;&emsp;&emsp;&emsp;<a href='desliga'>Desliga tudo</a><p>
+    <script>
+      for (var i = 1; i<=nSet; i++) {
+        document.write("<a href='setor?setor="+i+"'>Liga setor "+i+"</a>&emsp;&emsp;&emsp;");
+        if (i<=nProg) document.write("<a href='programa?prog="+i+"'>Inicia programa "+i+"</a>&emsp;");
+        document.write("<p>");
+      }
+    </script>
+    
+  </div>
+
+  <div id="programa" class="controlDiv" style ='visibility:hidden'>
+    <form action="/gravaProg" method="put" id="programacao">
+      <table>
+      <tr>
+        <td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</td>
+        <td>Início</td>
+      <script>
+          for (var i=1; i<=nSet; i++) {
+            document.write('<td>S '+i+'</td>');
+            }
+          document.write('<td>D</td> <td>S</td> <td>T</td> <td>Q</td> <td>Q</td> <td>S</td> <td>S</td> </tr>');
+        for (var i=1;i<=nProg;i++) {
+          document.write('<tr>');
+          document.write('  <td>P '+i+'</td>');
+          document.write('  <td><input type="time" id="inicioP'+i+'" name="inicioP'+i+'"/></td>');
+          for (var j=1;j<=nSet; j++) 
+            document.write('  <td><input type="number" id="tempoP'+i+'S'+j+'" name="tempoP'+i+'S'+j+'" min="0" max="30"/> </td>');
+
+          for (var j=1;j<=7;j++)
+            document.write('  <td><input type="checkbox" id="diaP'+i+'WD'+j+'" name="diaP'+i+'WD'+j+'" class="weekday"/>    </td>');
+          document.write('</tr>');
+
+        }
+
+        document.write("<tr><td>Coberto</td><td> </td>");
+        for (var i=1; i<=nSet; i++) 
+            document.write('<td><input type="checkbox" id="cobertoS'+i+'" name="cobertoS'+i+'" class="indoor"/>  </td>');
+            
+
+      </script>
+
+      </table>
+      
+      <br>
+      
+      <label for="bomba">Bomba:</label>
+      <select id="modoBomba" name="modoBomba">
+        <option value = "0"> Automática (agora poço) </option>
+        <option value = "1"> Automática (agora Caixa) </option>
+        <option value = "2"> Forçar poço </option>
+        <option value = "3"> Forçar caixa </option>
+      </select>
+      
+      &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <label for="chuva">Chuva últimas 48h:</label>
+      <select id="chuva" name="chuva">
+        <option value = "0"> Ignorar </option>
+        <option value = "1"> Baixa</option>
+        <option value = "2"> Média </option>
+        <option value = "3"> Alta </option>
+      </select>
+
+      &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <label for="previsao">Previsao de chuva:</label>
+      <select id="previsao" name="previsao">
+        <option value = "0"> Ignorar </option>
+        <option value = "1"> Nada</option>
+        <option value = "2"> Média </option>
+        <option value = "3"> Alta </option>
+      </select>
+
+
+      &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <label for="funcionamento">Funcionamento:</label>
+      <select id="funcionamento" name="funcionamento">
+        <option value = "0"> Normal </option>
+        <option value = "1"> Bloquear </option>
+        <option value = "2"> Bloquear 24 horas </option>        
+      </select>
+
+      <br>
+      <br>  
+      <button id="refreshProgr" onclick="leProg();" class="ControleButtonClass">Recarregar</button>
+      &nbsp&nbsp&nbsp&nbsp
+      <button id="salvaProgr" type="submit" class="ControleButtonClass">Salvar</button>
+    </form>
+  </div>
+  
+  <div id="statusProg" class="text">....</div>
+  </div>
+
+
+  <p>&nbsp;</p>
+  
+<script> setInterval(function(){atualizaStatus()},2000);  </script>
+</body>
+</html>
+

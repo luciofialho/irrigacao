@@ -1,0 +1,36 @@
+{
+	"folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "master-irrig"
+    },
+    {
+      "path": "slave-irrig"
+    },
+    {
+      "path": "Irrigacao-Caixa"
+    },
+    {
+      "path": "..\\..\\libraries\\__IOTK_NTP"
+    },
+    {
+      "path": "..\\..\\libraries\\__ThingSphere"
+    },
+    {
+      "path": "..\\..\\libraries\\__IOTK"
+    },
+    {
+      "path": "..\\..\\libraries\\__IOTK_WiFi"
+    },
+    {
+      "path": "../../libraries/__IOTK_ESP32"
+    }
+  ],
+	"settings": {
+		"files.associations": {
+			"*.src": "cpp"
+		}
+	}
+}

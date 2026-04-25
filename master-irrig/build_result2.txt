@@ -1,0 +1,470 @@
+Processing Master (platform: espressif32; board: nodemcu-32s; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/nodemcu-32s.html
+PLATFORM: Espressif 32 (6.9.0) > NodeMCU-32S
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - toolchain-xtensa-esp32 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 95 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- OneWire @ 2.3.8
+|-- DallasTemperature @ 3.11.0
+|-- ESP32Ping @ 1.7.0
+|-- Adafruit GFX Library @ 1.12.6
+|-- ESPAsyncWebServer-esphome @ 3.4.0
+|-- Adafruit SSD1306 @ 2.4.7
+|-- EEPROM @ 2.0.0
+|-- EMailSender @ 2.2.0
+|-- HTTPClient @ 2.0.0
+|-- __IOTK
+|-- __IOTK_CurrentMonitor
+|-- __IOTK_Dallas
+|-- __IOTK_ESPAsyncServer
+|-- __IOTK_NTP
+|-- __IOTK_UDP
+|-- LittleFS @ 2.0.0
+|-- NTPClient @ 3.1.0
+|-- ThingSpeak @ 2.0.1
+|-- Wire @ 2.0.0
+|-- __Timer
+Building in release mode
+Compiling .pio\build\Master\lib757\Ethernet\Dns.cpp.o
+Compiling .pio\build\Master\lib757\Ethernet\Ethernet.cpp.o
+Compiling .pio\build\Master\lib757\Ethernet\utility\socket.cpp.o
+Compiling .pio\build\Master\lib757\Ethernet\utility\w5100.cpp.o
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:1:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint8_t socket(SOCKET, uint8_t, uint16_t, uint8_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:15:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:15:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint8_t socketStatus(SOCKET)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:36:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:36:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'void close(SOCKET)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:48:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:48:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint8_t listen(SOCKET)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:61:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:61:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint8_t connect(SOCKET, const uint8_t*, uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:89:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:89:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'void disconnect(SOCKET)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:106:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:106:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint16_t send(SOCKET, const uint8_t*, uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:130:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:130:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:139:5: error: 'yield' was not declared in this scope
+     yield();
+     ^~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:1:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:144:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:144:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:159:5: error: 'yield' was not declared in this scope
+     yield();
+     ^~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:1:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'int16_t recv(SOCKET, uint8_t*, int16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:178:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:178:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'int16_t recvAvailable(SOCKET)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:212:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:212:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint16_t peek(SOCKET, uint8_t*)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:226:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:226:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint16_t sendto(SOCKET, const uint8_t*, uint16_t, uint8_t*, uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:257:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:257:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:276:7: error: 'yield' was not declared in this scope
+       yield();
+       ^~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:1:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint16_t recvfrom(SOCKET, uint8_t*, uint16_t, uint8_t*, uint16_t*)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:302:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:302:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint16_t igmpsend(SOCKET, const uint8_t*, uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:382:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:382:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:397:5: error: 'yield' was not declared in this scope
+     yield();
+     ^~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:1:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'uint16_t bufferData(SOCKET, uint16_t, const uint8_t*, uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:409:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:409:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'int startUDP(SOCKET, const uint8_t*, uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:435:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:435:26: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                          ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp: In function 'int sendUDP(SOCKET)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:445:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:445:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/socket.cpp:459:5: error: 'yield' was not declared in this scope
+     yield();
+     ^~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp: In member function 'void W5100Class::init()':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:27:3: error: 'delay' was not declared in this scope
+   delay(300);
+   ^~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:35:33: error: no matching function for call to 'SPIClass::setClockDivider(int, int)'
+   SPI.setClockDivider(SPI_CS, 21);
+                                 ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:70:10: note: candidate: 'void SPIClass::setClockDivider(uint32_t)'
+     void setClockDivider(uint32_t clockDiv);
+          ^~~~~~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:70:10: note:   candidate expects 1 argument, 2 provided
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:36:36: error: no matching function for call to 'SPIClass::setDataMode(int, int)'
+   SPI.setDataMode(SPI_CS, SPI_MODE0);
+                                    ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:68:10: note: candidate: 'void SPIClass::setDataMode(uint8_t)'
+     void setDataMode(uint8_t dataMode);
+          ^~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:68:10: note:   candidate expects 1 argument, 2 provided
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: error: 'MSBFIRST' was not declared in this scope
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:38:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:22:59: note: suggested alternative: 'SPI_MSBFIRST'
+ #define SPI_ETHERNET_SETTINGS SPI_CS,SPISettings(4000000, MSBFIRST, SPI_MODE0)
+                                                           ^~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:38:24: note: in expansion of macro 'SPI_ETHERNET_SETTINGS'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                        ^~~~~~~~~~~~~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp: In static member function 'static uint8_t W5100Class::write(uint16_t, uint8_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:147:30: error: 'SPI_CONTINUE' was not declared in this scope
+   SPI.transfer(SPI_CS, 0xF0, SPI_CONTINUE);
+                              ^~~~~~~~~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:15:16: error: invalid conversion from 'int' to 'void*' [-fpermissive]
+ #define SPI_CS 10
+                ^~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:150:16: note: in expansion of macro 'SPI_CS'
+   SPI.transfer(SPI_CS, _data);
+                ^~~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:76:26: note:   initializing argument 1 of 'void SPIClass::transfer(void*, uint32_t)'
+     void transfer(void * data, uint32_t size);
+                   ~~~~~~~^~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp: In static member function 'static uint16_t W5100Class::write(uint16_t, const uint8_t*, uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:168:29: error: 'SPI_CONTINUE' was not declared in this scope
+  SPI.transfer(SPI_CS, 0xF0, SPI_CONTINUE);
+                             ^~~~~~~~~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:15:16: error: invalid conversion from 'int' to 'void*' [-fpermissive]
+ #define SPI_CS 10
+                ^~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:171:15: note: in expansion of macro 'SPI_CS'
+  SPI.transfer(SPI_CS, _buf[i]);
+               ^~~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:76:26: note:   initializing argument 1 of 'void SPIClass::transfer(void*, uint32_t)'
+     void transfer(void * data, uint32_t size);
+                   ~~~~~~~^~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp: In static member function 'static uint8_t W5100Class::read(uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:188:30: error: 'SPI_CONTINUE' was not declared in this scope
+   SPI.transfer(SPI_CS, 0x0F, SPI_CONTINUE);
+                              ^~~~~~~~~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:15:16: error: invalid conversion from 'int' to 'void*' [-fpermissive]
+ #define SPI_CS 10
+                ^~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:191:32: note: in expansion of macro 'SPI_CS'
+   uint8_t _data = SPI.transfer(SPI_CS, 0);
+                                ^~~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:76:26: note:   initializing argument 1 of 'void SPIClass::transfer(void*, uint32_t)'
+     void transfer(void * data, uint32_t size);
+                   ~~~~~~~^~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:191:41: error: void value not ignored as it ought to be
+   uint8_t _data = SPI.transfer(SPI_CS, 0);
+                                         ^
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp: In static member function 'static uint16_t W5100Class::read(uint16_t, uint8_t*, uint16_t)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:209:29: error: 'SPI_CONTINUE' was not declared in this scope
+  SPI.transfer(SPI_CS, 0x0F, SPI_CONTINUE);
+                             ^~~~~~~~~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:15:16: error: invalid conversion from 'int' to 'void*' [-fpermissive]
+ #define SPI_CS 10
+                ^~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:212:28: note: in expansion of macro 'SPI_CS'
+     _buf[i] = SPI.transfer(SPI_CS, 0);
+                            ^~~~~~
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:13:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:76:26: note:   initializing argument 1 of 'void SPIClass::transfer(void*, uint32_t)'
+     void transfer(void * data, uint32_t size);
+                   ~~~~~~~^~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.cpp:212:37: error: void value not ignored as it ought to be
+     _buf[i] = SPI.transfer(SPI_CS, 0);
+                                     ^
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Dns.cpp: In member function 'int DNSClient::getHostByName(const char*, IPAddress&)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Dns.cpp:130:52: error: 'INADDR_ANY' was not declared in this scope
+     if (iDNSServer == INADDR_NONE || iDNSServer == INADDR_ANY)
+                                                    ^~~~~~~~~~
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Dns.cpp:130:52: note: suggested alternative: 'INADDR_NONE'
+     if (iDNSServer == INADDR_NONE || iDNSServer == INADDR_ANY)
+                                                    ^~~~~~~~~~
+                                                    INADDR_NONE
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp: In member function 'int EthernetClass::begin(uint8_t*)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:25:45: error: no matching function for call to 'SPIClass::beginTransaction(int, SPISettings)'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                                             ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:1:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note: candidate: 'void SPIClass::beginTransaction(SPISettings)'
+     void beginTransaction(SPISettings settings);
+          ^~~~~~~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note:   candidate expects 1 argument, 2 provided
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:36:47: error: no matching function for call to 'SPIClass::beginTransaction(int, SPISettings)'
+     SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                                               ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:1:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note: candidate: 'void SPIClass::beginTransaction(SPISettings)'
+     void beginTransaction(SPISettings settings);
+          ^~~~~~~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note:   candidate expects 1 argument, 2 provided
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp: In member function 'void EthernetClass::begin(uint8_t*, IPAddress, IPAddress, IPAddress, IPAddress)':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:74:45: error: no matching function for call to 'SPIClass::beginTransaction(int, SPISettings)'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                                             ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:1:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note: candidate: 'void SPIClass::beginTransaction(SPISettings)'
+     void beginTransaction(SPISettings settings);
+          ^~~~~~~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note:   candidate expects 1 argument, 2 provided
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp: In member function 'int EthernetClass::maintain()':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:95:51: error: no matching function for call to 'SPIClass::beginTransaction(int, SPISettings)'
+         SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                                                   ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:1:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note: candidate: 'void SPIClass::beginTransaction(SPISettings)'
+     void beginTransaction(SPISettings settings);
+          ^~~~~~~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note:   candidate expects 1 argument, 2 provided
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp: In member function 'IPAddress EthernetClass::localIP()':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:113:45: error: no matching function for call to 'SPIClass::beginTransaction(int, SPISettings)'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                                             ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:1:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note: candidate: 'void SPIClass::beginTransaction(SPISettings)'
+     void beginTransaction(SPISettings settings);
+          ^~~~~~~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note:   candidate expects 1 argument, 2 provided
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp: In member function 'IPAddress EthernetClass::subnetMask()':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:122:45: error: no matching function for call to 'SPIClass::beginTransaction(int, SPISettings)'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                                             ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:1:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note: candidate: 'void SPIClass::beginTransaction(SPISettings)'
+     void beginTransaction(SPISettings settings);
+          ^~~~~~~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note:   candidate expects 1 argument, 2 provided
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp: In member function 'IPAddress EthernetClass::gatewayIP()':
+A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:131:45: error: no matching function for call to 'SPIClass::beginTransaction(int, SPISettings)'
+   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+                                             ^
+In file included from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/utility/w5100.h:13,
+                 from A:/Nuvem/Arduino/Sketches/libraries/Ethernet/src/Ethernet.cpp:1:
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note: candidate: 'void SPIClass::beginTransaction(SPISettings)'
+     void beginTransaction(SPISettings settings);
+          ^~~~~~~~~~~~~~~~
+C:/Users/lucio/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h:74:10: note:   candidate expects 1 argument, 2 provided
+Archiving .pio\build\Master\lib0e4\libWiFiClientSecure.a
+*** [.pio\build\Master\lib757\Ethernet\utility\socket.cpp.o] Error 1
+*** [.pio\build\Master\lib757\Ethernet\utility\w5100.cpp.o] Error 1
+*** [.pio\build\Master\lib757\Ethernet\Ethernet.cpp.o] Error 1
+*** [.pio\build\Master\lib757\Ethernet\Dns.cpp.o] Error 1
+========================= [FAILED] Took 26.59 seconds =========================
+BUILD_FAILED 
