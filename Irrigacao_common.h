@@ -5,6 +5,7 @@
 // está dando erro de mismatch de tamanho de pacote. tentar colocar pacotes sem tamanho
 
 #include <Arduino.h>
+
 char ssids[]     = "secretoca~goiaba";
 char passwords[] = "Goiaba5090~heptA2019";
 #define DEVMODE false
@@ -20,6 +21,8 @@ const int tempoBomba   = 5; // min
 #define NUMSETORESMASTER 5
 #define MAXSETORESDEVICE 8
 #define NUMSETORESSLAVE (NUMSETORES-NUMSETORESMASTER)
+#define TCP_CMD_PORT 5272
+#define TCP_STATUS_PORT 5273
 
 
 #define ON  HIGH
@@ -30,8 +33,6 @@ unsigned long quandoDesligarBomba=0;
 unsigned long quandoDesligarPartida=0;
 unsigned long quandoLigarBomba=0;
 unsigned long quandoDesligarSetor[MAXSETORESDEVICE+1];
-
-IOTKUDP UDPTalk;
 
 unsigned long setorAtualResta;
 
@@ -79,7 +80,7 @@ void acionarSetor(byte x) {
     for (byte i=0; i<NUMLOCALSECTORS; i++)
       if (x == i+1+FIRSTLOCALSECTOR) {
         digitalWrite(PIN_SECTORS[i],OPEN_SECTORS[i]);
-;Serial.print("aciona: "); Serial.print(PIN_SECTORS[i]);Serial.print("  "); Serial.println(OPEN_SECTORS[i]);        
+//;Serial.print("aciona: "); Serial.print(PIN_SECTORS[i]);Serial.print("  "); Serial.println(OPEN_SECTORS[i]);        
         if (last != x) 
           delay(2000);
       }

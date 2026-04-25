@@ -42,13 +42,6 @@ float rainForecast;
 bool skipIrrigation = false;
 
 // Remote data
-unsigned long int lastRainRead=0;
-float  rainSinceNoon;
-
-unsigned long int lastWaterTankRead=0;
-bool   waterInTank;
-float  waterTankLevel;
-
 unsigned long int lastSlaveRead=0;
 byte setorSlave = 0;
 bool bombaSlave = false;
@@ -57,7 +50,7 @@ unsigned long int irrigTimeToday = 0;
 
 #define MASTER
 #include "../../Irrigacao_common.h"
-
+WiFiServer tcpStatusServer(TCP_STATUS_PORT);
 
 // program parameters
 byte progInicioMem=0;  
@@ -105,33 +98,6 @@ float readSlaveStatus(char *a) {
   return 0;
 }
 
-float readWaterTank(char *a) {
-  lastWaterTankRead = millis();
-  breakApart(a,'~');
-  waterTankLevel = atoi(getPiece(0));
-  waterInTank = atoi(getPiece(1));
-  return 0;
-}
-
-float readRain(char *a) {
-  lastRainRead = millis();
-  rainSinceNoon = atoi(a)/10.;
-  return 0;
-}
-
-void processExternalData() {
-  if (progModoBomba<=1) {
-    if (MILLISDIFF(lastWaterTankRead,120000L)) 
-      progModoBomba = 0;
-    else
-      if (waterTankLevel>20) // Lucio
-        progModoBomba = 1;
-      else
-        progModoBomba = 0;
-  }
-  skipIrrigation = rainSinceNoon >= 2;
-}
-
 String fnsz(int n, byte sz) {
   String s = String(n);
   while (s.length()<sz)
@@ -158,9 +124,7 @@ String getStatus() {
 
   status += "<br>Last slave read: " + String ((millis()-lastSlaveRead)/1000L) + " seg   ---   sector: " + String(setorSlave) + "  -  pump: ";
   if (bombaSlave) status += "ON"; else status += "OFF";
-  status += "</br><br>Last tank read: " +  String ((millis()-lastWaterTankRead)/1000L) + " seg   ---   level: " + String(waterTankLevel) + "  -  buoy: ";
-  if (waterInTank) status += "Has water"; else status += "dry";
-  status += "</br><br>Last rain read: " +  String ((millis()-lastRainRead)/1000L) + " seg  ---  rain since noon " + String(rainSinceNoon) + "</br>";
+  status += "</br>";
 
   status += "<br>M A S T E R :<p><p>";
 
@@ -207,12 +171,23 @@ bool slaveCmd(int tempoBomba,
       callStr += "~" + String(temposSetores[i-NUMSETORESMASTER]);
     else
       callStr += "~0";
-  if (UDPTalk.sendAndConfirm("IRG_CMD",callStr.c_str())) {
-    Serial.print("slaveCmd transmitido com sucesso: ");Serial.println(callStr);
-    ok = true;
+  WiFiClient tcpClient;
+  if (tcpClient.connect(slaveIP, TCP_CMD_PORT)) {
+    tcpClient.println(callStr);
+    unsigned long t = millis();
+    while (!tcpClient.available() && millis() < t + 3000) yield();
+    String response = tcpClient.readStringUntil('\n');
+    response.trim();
+    tcpClient.stop();
+    ok = response.startsWith("OK");
+    if (ok)
+      Serial.print("slaveCmd TCP sucesso: ");
+    else
+      Serial.print("slaveCmd TCP resposta inesperada: ");
+    Serial.println(callStr);
+  } else {
+    Serial.println("slaveCmd TCP: falha na conexão");
   }
-  else 
-    Serial.printf("problema no slaveCmd");
   return ok;
 }
 
@@ -281,23 +256,6 @@ void ligaCaixa(AsyncWebServerRequest *request) {
   else
     responseConfirmation(request, "Falha ao comunicar com o slave");
 
-}
-
-float pocoParaCervejaria(char *a) {
-  unsigned long int last = 0;
-  if (MILLISDIFF(last,45000L)) {
-//      slaveCmd(0); 
-    int tempo=atoi(a);
-    if (tempo>30 && tempo<15*60) {
-      ativarBomba(tempo*1000L);
-    }
-    else
-      desativarBomba();
-      
-    last = millis();
-  }
-
-  return 0;
 }
 
 void desliga(AsyncWebServerRequest *request) {
@@ -687,25 +645,19 @@ void writeToThingspeak() {
   static unsigned long int lastTS = 0;
   byte status = 0;
   if (MILLISDIFF(lastTS,thingspeakInterval)) {
-    if (masterPump || bombaSlave)
+    if (masterPump || bombaSlave) {
       if (activeSector !=0 || setorSlave != 0)
         status = 1;
       else
         status = 2;
-    else { 
-      if (lastSlaveRead>120000L)
-        status = 100;
-      else if (lastWaterTankRead>120000)
-        status = 101;
-      else if (lastRainRead > 120000)
-        status = 102;
-      else
-        status = 0;
     }
-    ThingSpeak.setField(1,waterTankLevel);
-    ThingSpeak.setField(2,float(waterInTank));
+    else
+        status = 0;
+        
+    ThingSpeak.setField(1,0 /*waterTankLevel*/);
+    ThingSpeak.setField(2,0 /*float(waterInTank)*/);
     ThingSpeak.setField(3,rainForecast);
-    ThingSpeak.setField(4,rainSinceNoon);
+    ThingSpeak.setField(4,0 /*rainSinceNoon*/);
     ThingSpeak.setField(5,progModoBomba);
     //humidity
     ThingSpeak.setField(7,float(irrigTimeToday));
@@ -754,11 +706,7 @@ void setup() {
   tempoPartidams = tempoPartida * 1000L;
 
   NTPBegin(-3);  
-  UDPTalk.begin();
-  UDPTalk.onPacket("IRG_SLAVE_STATUS",readSlaveStatus);
-  UDPTalk.onPacket("IRG_TANK",readWaterTank);
-  UDPTalk.onPacket("ROOF_RAIN",readRain);
-  UDPTalk.onPacket("WELL_TO_BREW",pocoParaCervejaria);
+  tcpStatusServer.begin();
   
 
   if(LittleFS.begin())
@@ -769,7 +717,19 @@ void setup() {
 
 void loop() {
   handle_IOTK();
-  UDPTalk.handle();
+
+  // Recebe status do slave via TCP
+  WiFiClient statusClient = tcpStatusServer.available();
+  if (statusClient) {
+    unsigned long t = millis();
+    while (!statusClient.available() && millis() < t + 2000) yield();
+    String line = statusClient.readStringUntil('\n');
+    line.trim();
+    if (line.length() > 0)
+      readSlaveStatus((char*)line.c_str());
+    statusClient.stop();
+  }
+
   //server.handleClient();
   lePrevisao();
 
@@ -796,8 +756,6 @@ void loop() {
   static byte lastCheck = 0;
 
   if (lastCheck != NTPMinute()) {
-    processExternalData();
-
     lastCheck = NTPMinute();
     for (byte i=0; i<NUMPROGS; i++) {
       bool temSetor = false;
