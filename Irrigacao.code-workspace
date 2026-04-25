@@ -26,6 +26,9 @@
     },
     {
       "path": "../../libraries/__IOTK_ESP32"
+    },
+    {
+      "path": "../../../Arduino/Sketches/libraries/IOTK_SimpleMail"
     }
   ],
 	"settings": {

@@ -4,8 +4,6 @@
 #include <IOTK_CurrentMonitor.h>
 #include <IOTK_NTP.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 
 #define PIN_BOMBA 32
 #define NUMLOCALSECTORS 8
@@ -29,7 +27,7 @@ bool slavePump;
 char masterIP[16] = "";
 WiFiServer tcpCmdServer(TCP_CMD_PORT);
 
-Adafruit_SSD1306 oled(128, 64, &Wire, -1);
+Adafruit_SSD1306 oled(128, 64, &Wire, -1); // definição local referenciada pelo common
 
 String getStatus() {
   String status;
@@ -52,44 +50,6 @@ String getStatus() {
   return status;
 }
 
-void oledStatus() {
-  static unsigned long last = 0;
-
-  if (MILLISDIFF(last,200)) {
-    last = millis();
-
-    oled.clearDisplay();
-
-    oled.setCursor(0,0);
-    oled.setTextSize(1);
-    oled.print("Bomba: ");
-    oled.setTextColor(WHITE);
-    oled.setTextSize(2);
-    if (quandoDesligarBomba != 0) 
-      oled.println((quandoDesligarBomba-millis())/1000);
-    else
-      oled.println("deslig");
-    oled.setTextSize(1);
-    oled.print("Setor: ");
-    oled.setTextSize(2);
-    if (activeSector != 0) {
-      oled.print(activeSector);
-      oled.print(" ");
-      oled.println(setorAtualResta/1000);
-    }
-    else
-      oled.println("nenhum");
-
-    oled.setTextSize(1);
-    oled.println();
-    if (wifiIsConnected()) {
-      oled.print("signal: "); oled.print(WiFi.RSSI()); oled.print(" ("); oled.print(WiFi.localIP()[3]); oled.println(")");
-    }
-    else
-      oled.print("conectando...");
-    oled.display();               // show on OLED  
-  }
-}
 
 float slavecmd(char *cmd) {
 Serial.print("Comando: "); Serial.println(cmd); //*************
@@ -189,29 +149,15 @@ void setup() {
   
   resetTemposSetores();
 
-  Wire.begin(5,4);
-
-  // initialize OLED display with address 0x3C for 128x64
-  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C))
-    Serial.println(F("SSD1306 allocation failed"));
-  else 
-    Serial.println("SSD1306 allocation success");  
-  
-  oled.clearDisplay();
-
-  oled.setTextSize(2);
-  oled.setTextColor(WHITE);
-  oled.setCursor(0, 10);
-  oled.println("IRRIGACAO");
-  oled.println("SLAVE");
-  oled.display();               
+  Wire.begin(5, 4);
+  oledInitDisplay("SLAVE");
 
   setBuiltinLedPin(33);
 }
 
 void loop() {
   handle_IOTK();
-  oledStatus();
+  oledHandle();
 
   // Recebe comandos via TCP
   WiFiClient tcpClient = tcpCmdServer.available();

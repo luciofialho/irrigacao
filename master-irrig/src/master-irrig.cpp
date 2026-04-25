@@ -6,7 +6,7 @@
 #include <IOTK_ESPAsyncServer.h>
 #include <HTTPClient.h>
 #include <__Timer.h>
-#include <EMailSender.h>
+#include <IOTK_SimpleMail.h>
 #include <Preferences.h>
 #include <LittleFS.h>
 #include <NTPClient.h>
@@ -15,7 +15,12 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+Adafruit_SSD1306 oled(128, 64, &Wire, -1);
+
 #define PIN_BOMBA 17
+#define PIN_WATER_FLOW     16
+#define PIN_WATER_FLOW_LED 18
+
 byte PIN_SECTORS[]    = {19,  21,  22,  23,  25};     // master
 byte OPEN_SECTORS[]   = {HIGH, HIGH, HIGH, HIGH, HIGH};
 byte CLOSED_SECTORS[] = {LOW,  LOW,  LOW,  LOW,  LOW};
@@ -32,7 +37,6 @@ byte CLOSED_SECTORS[] = {LOW,  LOW,  LOW,  LOW,  LOW};
 #define thingpeakID 1757100
 #define thingspeakKey "FT1AY0G9WHN7KLHE"
 
-EMailSender emailSend("apikey", "SG.SUA_CHAVE_SENDGRID_AQUI","luciofialho@gmail.com","Secretoca","smtp.sendgrid.net",465);
 const int tempoPartida = 40; //seg
 unsigned long int tempoPartidams;
 
@@ -47,6 +51,8 @@ byte setorSlave = 0;
 bool bombaSlave = false;
 
 unsigned long int irrigTimeToday = 0;
+
+bool waterFlow = false; // true = há fluxo de água no pino 16
 
 #define MASTER
 #include "../../Irrigacao_common.h"
@@ -608,37 +614,28 @@ void leProg(AsyncWebServerRequest *request)  {
   request->send(200, "text/plain; charset=utf-8", leProgStr());    
 }
 
+struct EmailTaskParams {
+  char subject[160];
+  char body[512];
+};
+
+void emailTaskFn(void *param) {
+  EmailTaskParams *e = (EmailTaskParams*)param;
+  sendSimpleMail(String(e->subject), String(e->body));
+  delete e;
+  vTaskDelete(NULL);
+}
+
 void enviarEmail(String subject_, String message_) {
-  EMailSender::EMailMessage message;
-
-    message.subject = "[Irrigação secretoca] " + subject_;
-    message.message = message_;
-
-    EMailSender::Response resp = emailSend.send("lucio@solucionar.com.br", message);
-
-    Serial.println("Sending status: ");
-
-    Serial.println(resp.status);
-    Serial.println(resp.code);
-    Serial.println(resp.desc);
+  EmailTaskParams *e = new EmailTaskParams();
+  ("[Irrigação secretoca] " + subject_).toCharArray(e->subject, sizeof(e->subject));
+  message_.toCharArray(e->body, sizeof(e->body));
+  xTaskCreate(emailTaskFn, "sendMail", 8192, e, 1, NULL);
 }
 
 void testaEmail(AsyncWebServerRequest *request) {
-  EMailSender::EMailMessage message;
-    message.subject = "[Irrigação secretoca] E-mail de teste";
-    message.message = "Este é um e-mail de teste enviado pela irrigação da Secretoca";
-
-    EMailSender::Response resp = emailSend.send("lucio@solucionar.com.br", message);
-
-    Serial.println("Sending status: ");
-
-    Serial.println(resp.status);
-    Serial.println(resp.code);
-    Serial.println(resp.desc);
-  
-  char buf[200];
-  resp.desc.toCharArray(buf,200);
-  responseConfirmation(request, buf);
+  enviarEmail("E-mail de teste", "Este é um e-mail de teste enviado pela irrigação da Secretoca");
+  responseConfirmation(request, "E-mail enviado em background");
 }
 
 void writeToThingspeak() {
@@ -669,8 +666,20 @@ void writeToThingspeak() {
 }
 
 void setup() {
+
+  pinMode(PIN_BOMBA,OUTPUT);     digitalWrite(PIN_BOMBA, OFF);
+
+  pinMode(PIN_WATER_FLOW,     INPUT);
+  pinMode(PIN_WATER_FLOW_LED, OUTPUT);
+  for (byte i=0; i<NUMLOCALSECTORS; i++) {
+    pinMode(PIN_SECTORS[i], OUTPUT); 
+    digitalWrite(PIN_SECTORS[i],CLOSED_SECTORS[i]);
+  }
+  
   Serial.begin(115200);
-  strcpy(ESP_AppName, "Irrigation - master");  
+  strcpy(ESP_AppName, "Irrigation - master");
+  Wire.begin(5,4);
+  oledInitDisplay("MASTER");
 
   setStatusSource(getStatus);
   const char* ssid_arr[]     = {"secretoca", "goiaba"};
@@ -678,13 +687,6 @@ void setup() {
   ESPSetup(2, ssid_arr, pass_arr);
   ThingSpeak.begin(client);
 
-  pinMode(PIN_BOMBA,OUTPUT);     digitalWrite(PIN_BOMBA, OFF);
-  pinMode(PIN_START,OUTPUT);  
-  for (byte i=0; i<NUMLOCALSECTORS; i++) {
-    pinMode(PIN_SECTORS[i], OUTPUT); 
-    digitalWrite(PIN_SECTORS[i],CLOSED_SECTORS[i]);
-  }
-  Serial.println("Iniciando irrigação - master");
 
   resetTemposSetores();
 
@@ -805,7 +807,8 @@ void loop() {
 
             
   //--------------------------------------------- Controle led
+  waterFlow = digitalRead(PIN_WATER_FLOW);
+  digitalWrite(PIN_WATER_FLOW_LED, waterFlow);
   ledAsWifiStatus();
-
-
+  oledHandle();
 }
