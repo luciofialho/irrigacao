@@ -1,6 +1,3 @@
-// Lucio To-do Todo
-// tratar coberto: ligar programa mesmo com chuva para esses casos
-
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>

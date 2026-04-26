@@ -812,6 +812,7 @@ void loop() {
           }
 
           if (!skipByForecast && progFuncionamento==0) {
+            // programa completo
             Serial.print("Iniciando programa ");
             Serial.println(i+1);
             subject += " - " + programa_(NULL, 0,i+1);
@@ -828,13 +829,42 @@ void loop() {
                 body += " min";
               }
             }
-          }   
+          }
+          else if (skipByForecast && progFuncionamento==0) {
+            // dispensado por previsão - verifica setores cobertos
+            bool temCoberto = false;
+            for (byte k=0;k<NUMSETORES;k++)
+              if (progTempoSetor[i][k]>0 && progCoberto[k])
+                temCoberto = true;
+            if (temCoberto) {
+              // executa apenas setores cobertos
+              byte backup[NUMSETORES];
+              for (byte k=0;k<NUMSETORES;k++) {
+                backup[k] = progTempoSetor[i][k];
+                if (!progCoberto[k]) progTempoSetor[i][k] = 0;
+              }
+              Serial.print("Iniciando programa (só cobertos) ");
+              Serial.println(i+1);
+              subject += " - cobertos - " + programa_(NULL, 0,i+1);
+              for (byte k=0;k<NUMSETORES;k++) progTempoSetor[i][k] = backup[k];
+              body = subject + "  (apenas cobertos, rainForecast=" + String(rainForecast,1) + ")<br>";
+              for (byte j=0;j<NUMSETORES;j++) {
+                if (progTempoSetor[i][j] && progCoberto[j]) {
+                  body += "<br>Setor " + String(j+1)+": ";
+                  body += String(progTempoSetor[i][j]/2.);
+                  body += " min (coberto)";
+                }
+              }
+            } else {
+              subject += " dispensado";
+              const char* motivo = progPrevisao==1 ? "previsão: alta (fixo)" : "previsão automática";
+              body = subject + "  (" + motivo + ", rainForecast=" + String(rainForecast,1) + ")";
+            }
+          }
           else {
+            // bloqueado por progFuncionamento
             subject += " dispensado";
-            const char* motivo = progPrevisao==1 ? "previsão: alta (fixo)" :
-                                  progPrevisao==2 ? "nunca cancela (baixa)" :
-                                  "previsão automática";
-            body = subject + "  (" + motivo + ", rainForecast=" + String(rainForecast,1) + ")";
+            body = subject + "  (funcionamento bloqueado)";
           }
           enviarEmail(subject, body);
           break;
