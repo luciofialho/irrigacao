@@ -174,6 +174,7 @@ void processaBomba() {
           if (millis() - semFluxoDesde >= LACKOFFLOW_TIMEOUT_MS) {
             semFluxoDesde = 0;
             byte alivio[MAXSETORESDEVICE]={205,0,0,0,0,0};
+            waterAlertSector = activeSector;
             desativarBomba();
             setores(0,alivio);
             waterAlertPending = true;
@@ -200,12 +201,13 @@ void oledWake() {
   oledLastActivity = millis();
 }
 
-void oledInitDisplay(const char *deviceName) {
+void oledInitDisplay(const char *deviceName, uint8_t rotation = 0) {
   pinMode(PIN_BTN_DISPLAY, INPUT_PULLUP);
   if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C))
     Serial.println(F("SSD1306 allocation failed"));
   else
     Serial.println("SSD1306 allocation success");
+  oled.setRotation(rotation);
   oled.clearDisplay();
   oled.setTextSize(2);
   oled.setTextColor(WHITE);

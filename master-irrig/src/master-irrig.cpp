@@ -59,6 +59,7 @@ unsigned long int irrigTimeToday = 0;
 
 bool waterFlow = false; // true = há fluxo de água no pino 16
 bool waterAlertPending = false; // flag: bomba desligada por falta de fluxo
+byte waterAlertSector = 0;      // setor ativo no momento da falta de fluxo
 
 unsigned long bombaPumpOffSince = 0;    // millis() quando bomba desligou; 0=desconhecido/nunca ligou
 bool fluxoSempreCheckAtivo = false;     // checagem "água sempre" em andamento (janela de 2s)
@@ -188,22 +189,29 @@ bool slaveCmd(int tempoBomba,
       callStr += "~" + String(temposSetores[i-NUMSETORESMASTER]);
     else
       callStr += "~0";
-  WiFiClient tcpClient;
-  if (tcpClient.connect(slaveIP, TCP_CMD_PORT)) {
-    tcpClient.println(callStr);
-    unsigned long t = millis();
-    while (!tcpClient.available() && millis() < t + 3000) yield();
-    String response = tcpClient.readStringUntil('\n');
-    response.trim();
-    tcpClient.stop();
-    ok = response.startsWith("OK");
-    if (ok)
-      Serial.print("slaveCmd TCP sucesso: ");
-    else
-      Serial.print("slaveCmd TCP resposta inesperada: ");
-    Serial.println(callStr);
-  } else {
-    Serial.println("slaveCmd TCP: falha na conexão");
+  for (byte attempt = 1; attempt <= 5 && !ok; attempt++) {
+    if (attempt > 1) {
+      Serial.printf("slaveCmd: aguardando 5s antes da tentativa %d/5...\n", attempt);
+      unsigned long wait = millis();
+      while (millis() - wait < 5000UL) { handle_IOTK(); yield(); }
+    }
+    WiFiClient tcpClient;
+    if (tcpClient.connect(slaveIP, TCP_CMD_PORT)) {
+      tcpClient.println(callStr);
+      unsigned long t = millis();
+      while (!tcpClient.available() && millis() < t + 3000) yield();
+      String response = tcpClient.readStringUntil('\n');
+      response.trim();
+      tcpClient.stop();
+      ok = response.startsWith("OK");
+      if (ok)
+        Serial.printf("slaveCmd TCP sucesso (tentativa %d): ", attempt);
+      else
+        Serial.printf("slaveCmd TCP resposta inesperada (tentativa %d): ", attempt);
+      Serial.println(callStr);
+    } else {
+      Serial.printf("slaveCmd TCP: falha na conexão (tentativa %d/5)\n", attempt);
+    }
   }
   return ok;
 }
@@ -644,7 +652,7 @@ struct EmailTaskParams {
 
 void emailTaskFn(void *param) {
   EmailTaskParams *e = (EmailTaskParams*)param;
-  sendSimpleMail(String(e->subject), String(e->body));
+  sendSimpleMail(String(e->subject), String(e->body), true);
   delete e;
   vTaskDelete(NULL);
 }
@@ -703,7 +711,7 @@ void setup() {
   Serial.begin(115200);
   strcpy(ESP_AppName, "Irrigation - master");
   Wire.begin(5,4);
-  oledInitDisplay("MASTER");
+  oledInitDisplay("MASTER", 2);
 
   setStatusSource(getStatus);
   const char* ssid_arr[]     = {"secretoca", "goiaba"};
@@ -764,7 +772,10 @@ void loop() {
 
   if (waterAlertPending) {
     waterAlertPending = false;
-    enviarEmail("Alerta de FALTA DE ÁGUA", "A bomba foi desligada após o tempo de partida pois não foi detectado fluxo de água.");
+    String msg = "A bomba foi desligada após o tempo de partida pois não foi detectado fluxo de água.";
+    if (waterAlertSector != 0)
+      msg += " Setor aberto: " + String(waterAlertSector) + ".";
+    enviarEmail("Alerta de FALTA DE ÁGUA", msg);
   }
 
   masterPump = quandoDesligarBomba != 0;
