@@ -60,6 +60,11 @@ unsigned long int irrigTimeToday = 0;
 bool waterFlow = false; // true = há fluxo de água no pino 16
 bool waterAlertPending = false; // flag: bomba desligada por falta de fluxo
 
+unsigned long bombaPumpOffSince = 0;    // millis() quando bomba desligou; 0=desconhecido/nunca ligou
+bool fluxoSempreCheckAtivo = false;     // checagem "água sempre" em andamento (janela de 2s)
+unsigned long fluxoSempreCheckAte = 0; // quando os 2s da checagem expiram
+bool waterFluxoSemprePending = false;   // flag para envio do e-mail de erro no sensor
+
 #define MASTER
 #include "../../Irrigacao_common.h"
 WiFiServer tcpStatusServer(TCP_STATUS_PORT);
@@ -724,7 +729,7 @@ void setup() {
   leConfig();
 
   tempoBombams = tempoBomba * 1000L *30L;
-  tempoPartidams = tempoPartida * 1000L;
+  tempoPartidams = (tempoPartida * 1000L) - LACKOFFLOW_TIMEOUT_MS;
 
   NTPBegin(-3);  
   tcpStatusServer.begin();
@@ -759,10 +764,52 @@ void loop() {
 
   if (waterAlertPending) {
     waterAlertPending = false;
-    enviarEmail("Alerta de falta de água", "A bomba foi desligada após o tempo de partida pois não foi detectado fluxo de água.");
+    enviarEmail("Alerta de FALTA DE ÁGUA", "A bomba foi desligada após o tempo de partida pois não foi detectado fluxo de água.");
   }
 
-  masterPump =quandoDesligarBomba !=0;
+  masterPump = quandoDesligarBomba != 0;
+
+  // Checagem de sensor de fluxo preso em "água sempre":
+  // Se a bomba ficou desligada >5 min e, ao ligar, detectar água por 2 s contínuos,
+  // considera falha do sensor (indicando água sempre) e envia e-mail de erro.
+  {
+    static bool lastPump = false;
+    if (masterPump && !lastPump) {
+      // bomba acabou de ligar
+      if (bombaPumpOffSince == 0 || millis() - bombaPumpOffSince >= 5UL * 60UL * 1000UL) {
+        fluxoSempreCheckAtivo = true;
+        fluxoSempreCheckAte = millis() + 2000UL; // observa os 2 primeiros segundos
+      }
+      bombaPumpOffSince = 0;
+    }
+    if (!masterPump && lastPump) {
+      // bomba acabou de desligar
+      bombaPumpOffSince = millis();
+      fluxoSempreCheckAtivo = false;
+    }
+    lastPump = masterPump;
+  }
+
+  if (fluxoSempreCheckAtivo) {
+    if (!waterFlow) {
+      // sensor sem fluxo em algum momento — está OK, cancela checagem
+      fluxoSempreCheckAtivo = false;
+    } else if (millis() >= fluxoSempreCheckAte) {
+      // 2s com fluxo ininterrupto antes da bomba poder causar isso — sensor travado
+      fluxoSempreCheckAtivo = false;
+      waterFluxoSemprePending = true;
+    }
+  }
+
+  if (waterFluxoSemprePending) {
+    waterFluxoSemprePending = false;
+    enviarEmail("ERRO NO SENSOR DE FLUXO",
+      "Sensor de fluxo indicando água sempre. "
+      "Ao iniciar a partida (após mais de 5 min desligado), "
+      "fluxo detectado por 2 segundos sem que a bomba pudesse causá-lo. "
+      "Verificar sensor de fluxo - possível falha permanente.");
+    Serial.println("Erro no sensor de fluxo: indicando água sempre");
+  }
 
   static unsigned lastCheckTime = 0;
   if (MILLISDIFF(lastCheckTime,5000L)) {

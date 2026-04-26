@@ -3,6 +3,8 @@
 #include <Adafruit_SSD1306.h>
 #include <WiFi.h>
 
+#define LACKOFFLOW_TIMEOUT_MS (3UL * 1000UL) // tempo sem fluxo para considerar falta de água e cancelar irrigação
+
 char ssids[]     = "secretoca~goiaba";
 char passwords[] = "Goiaba5090~heptA2019";
 #define DEVMODE false
@@ -169,7 +171,7 @@ void processaBomba() {
         static unsigned long semFluxoDesde = 0;
         if (quandoDesligarPartida == 0 && (!waterFlow || semFluxoDesde!=0)) {
           if (semFluxoDesde == 0) semFluxoDesde = millis();
-          if (millis() - semFluxoDesde >= 5000) {
+          if (millis() - semFluxoDesde >= LACKOFFLOW_TIMEOUT_MS) {
             semFluxoDesde = 0;
             byte alivio[MAXSETORESDEVICE]={205,0,0,0,0,0};
             desativarBomba();
