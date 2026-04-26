@@ -163,12 +163,13 @@ function ProgramaButtonVisibility(visible) {
 
 <head>
 
-<html>
+<html lang="pt-BR">
   <head>
     <meta name='viewport' content='width=device-width, initial-scale=1' charset="utf-8">  
     <title>Irrigacao</title>
     <style>
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }
+      input[type="time"]::-webkit-datetime-edit-ampm-field { display: none; }
     </style>
   </head>
   <body>
@@ -211,7 +212,7 @@ function ProgramaButtonVisibility(visible) {
         for (var i=1;i<=nProg;i++) {
           document.write('<tr>');
           document.write('  <td>P '+i+'</td>');
-          document.write('  <td><input type="time" id="inicioP'+i+'" name="inicioP'+i+'"/></td>');
+          document.write('  <td><input type="text" id="inicioP'+i+'" name="inicioP'+i+'" maxlength="5" size="5" placeholder="HH:MM" pattern="[0-2][0-9]:[0-5][0-9]"/></td>');
           for (var j=1;j<=nSet; j++) 
             document.write('  <td><input type="number" id="tempoP'+i+'S'+j+'" name="tempoP'+i+'S'+j+'" min="0" max="30"/> </td>');
 
@@ -240,22 +241,11 @@ function ProgramaButtonVisibility(visible) {
         <option value = "3"> Forçar caixa </option>
       </select>
       
-      &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-      <label for="chuva">Chuva últimas 48h:</label>
-      <select id="chuva" name="chuva">
-        <option value = "0"> Ignorar </option>
-        <option value = "1"> Baixa</option>
-        <option value = "2"> Média </option>
-        <option value = "3"> Alta </option>
-      </select>
-
-      &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-      <label for="previsao">Previsao de chuva:</label>
+      <label for="previsao">Previsão de chuva:</label>
       <select id="previsao" name="previsao">
-        <option value = "0"> Ignorar </option>
-        <option value = "1"> Nada</option>
-        <option value = "2"> Média </option>
-        <option value = "3"> Alta </option>
+        <option value="0">Automático</option>
+        <option value="1">Alta (cancela sempre)</option>
+        <option value="2">Baixa (nunca cancela)</option>
       </select>
 
 

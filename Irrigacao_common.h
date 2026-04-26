@@ -136,7 +136,7 @@ void processaSetores() {
         passou(quandoDesligarSetor[i-1]) &&
         !passou(quandoDesligarSetor[i])) {
       acionarSetor(FIRSTLOCALSECTOR + i);
-      quandoDesligarPartida = millis()+5000;
+      // quandoDesligarPartida era para PIN_START (removido) -- não tocar aqui
       #ifdef MASTER
         activeSector = i;
       #else
@@ -147,6 +147,8 @@ void processaSetores() {
   if (activeSector==0)
     acionarSetor(0);
 }
+
+
 
 void processaBomba() {
   #ifdef MASTER
@@ -169,12 +171,22 @@ void processaBomba() {
       else {
         #ifdef MASTER
         // após a partida, mantém bomba somente se houver fluxo de água
-        if (quandoDesligarPartida == 0 && !waterFlow) {
-          digitalWrite(PIN_BOMBA, OFF);
-          desativarBomba();
-          sendSimpleMail("[Irrigação secretoca] Alerta de falta de água", "A bomba foi desligada devido à falta de fluxo de água.");
-        } else
+        // uma vez iniciada a contagem de 5s, fluxo retornando NÃO cancela
+        static unsigned long semFluxoDesde = 0;
+        if (quandoDesligarPartida == 0 && (!waterFlow || semFluxoDesde!=0)) {
+          if (semFluxoDesde == 0) semFluxoDesde = millis();
+          if (millis() - semFluxoDesde >= 5000) {
+            semFluxoDesde = 0;
+            byte alivio[MAXSETORESDEVICE]={205,0,0,0,0,0};
+            desativarBomba();
+            setores(0,alivio);
+            waterAlertPending = true;
+          } else
+            digitalWrite(PIN_BOMBA, ON);
+        } else {
+          semFluxoDesde = 0;
           digitalWrite(PIN_BOMBA, ON);
+        }
         #else
           digitalWrite(PIN_BOMBA, ON);
         #endif

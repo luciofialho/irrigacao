@@ -25,6 +25,11 @@ byte PIN_SECTORS[]    = {19,  21,  22,  23,  25};     // master
 byte OPEN_SECTORS[]   = {HIGH, HIGH, HIGH, HIGH, HIGH};
 byte CLOSED_SECTORS[] = {LOW,  LOW,  LOW,  LOW,  LOW};
 
+String callStr = 
+      //"http://api.openweathermap.org/data/2.5/forecast?lat=-22.367&lon=-43.183&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json"; // secretario;
+      //"http://api.openweathermap.org/data/2.5/forecast?lat=-1.455&lon=-48.502&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json"; // belem
+       "http://api.openweathermap.org/data/2.5/forecast?lat=-25.548&lon=-54.588&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json"; // foz
+ 
 
 #define NUMLOCALSECTORS 5
 #define FIRSTLOCALSECTOR 0
@@ -53,6 +58,7 @@ bool bombaSlave = false;
 unsigned long int irrigTimeToday = 0;
 
 bool waterFlow = false; // true = há fluxo de água no pino 16
+bool waterAlertPending = false; // flag: bomba desligada por falta de fluxo
 
 #define MASTER
 #include "../../Irrigacao_common.h"
@@ -66,12 +72,11 @@ byte progTempoSetor[NUMPROGS][NUMSETORES];
 bool progDiaSemana[NUMPROGS][7];
 byte progCoberto[NUMSETORES];
 byte progModoBomba;
-byte progChuva;
-byte progPrevisao;
+byte progPrevisao; // 0=automático, 1=alta (cancela), 2=baixa (não cancela)
 byte progFuncionamento;
 byte progFimMem=0;
-char slaveIP[16] = "192.168.1.100";
-char caixaIP[16]  = "192.168.1.101";
+char slaveIP[16] = "192.168.29.191";
+char caixaIP[16]  = "192.168.29.192";
 
 unsigned long int Epoch;
 unsigned long int EpochMillis;
@@ -97,10 +102,10 @@ float readSlaveStatus(char *a) {
   bombaSlave = a[1] == '1';
   strncpy(slaveStatus,a+2,127);
   lastSlaveRead = millis();
-  ;Serial.print("Slave transmitiu===>");
+  /*;Serial.print("Slave transmitiu===>");
   ;Serial.println(a);
   ;Serial.print("processei ==> ");
-  ;Serial.println(slaveStatus);
+  ;Serial.println(slaveStatus);*/
   return 0;
 }
 
@@ -207,7 +212,7 @@ bool lePrevisao() {
     
     HTTPClient http;
     
-    String callStr = "http://api.openweathermap.org/data/2.5/forecast?lat=-22.367&lon=-43.183&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json";
+
     String payLoad;
 
     if (http.begin(client,callStr)) {
@@ -225,18 +230,32 @@ bool lePrevisao() {
       Serial.println("Falha ao iniciar http para leitura da previsao");
     http.end();
     
-    int p = 0;
-    float previsao=0;
-    String stProb = ",\"pop\":";
-    String stVol = "{\"3h\":";
-    for (int i=0; i<8; i++) {
-      p = payLoad.indexOf(stProb,p);
-      String prob = payLoad.substring(p+stProb.length(),p+stProb.length()+4);
-      p = payLoad.indexOf(stVol,p);
-      String vol = payLoad.substring(p+stVol.length(),p+stVol.length()+4);
-      previsao += prob.toFloat()*prob.toFloat()*vol.toFloat();
-      Serial.print(i);Serial.print(": "); Serial.print(p); Serial.print("   "); Serial.print(prob.toFloat());Serial.print("("); Serial.print(prob); 
-                                                          Serial.print(") - "); Serial.print(vol.toFloat()); Serial.print("("); Serial.print(vol.toFloat()); Serial.print(")  expectativa ajustada: "); Serial.println(previsao);
+    int pSearch = 0;
+    float previsao = 0;
+    String stProb   = "\"pop\":";
+    String stRain   = "\"rain\":{\"3h\":";
+    for (int i = 0; i < 8; i++) {
+      int pPop = payLoad.indexOf(stProb, pSearch);
+      if (pPop == -1) break;
+
+      // limite da janela = início do próximo pop (ou fim do payload)
+      int pNext = payLoad.indexOf(stProb, pPop + stProb.length());
+      int windowEnd = (pNext == -1) ? payLoad.length() : pNext;
+
+      float prob = payLoad.substring(pPop + stProb.length(), pPop + stProb.length() + 5).toFloat();
+
+      float vol = 0;
+      int pRain = payLoad.indexOf(stRain, pPop);
+      if (pRain != -1 && pRain < windowEnd) {
+        int vStart = pRain + stRain.length();
+        vol = payLoad.substring(vStart, vStart + 6).toFloat();
+      }
+
+      previsao += prob * prob * vol;
+      Serial.printf("%d: pop=%.2f  rain3h=%.2f  contrib=%.3f  total=%.3f\n",
+                    i, prob, vol, prob * prob * vol, previsao);
+
+      pSearch = pPop + stProb.length();
     }
     rainForecast = previsao;
   }
@@ -268,10 +287,11 @@ void desliga(AsyncWebServerRequest *request) {
   byte alivio[MAXSETORESDEVICE]={205,0,0,0,0,0};
   desativarBomba();
   setores(0,alivio);
+  
   if (slaveCmd(0))
-      responseConfirmation(request, "Desligando master e slave");
-    else
-      responseConfirmation(request, "Desligando master ---- falha ao comunicar com o slave");
+    responseConfirmation(request, "Desligando master e slave");
+  else
+    responseConfirmation(request, "Desligando master ---- falha ao comunicar com o slave");
 }
 
 String programa_(AsyncWebServerRequest *request, long overrideTempo,int progNum) {
@@ -429,7 +449,7 @@ uint16_t computeConfigChecksum() {
     for (byte j = 0; j < 7; j++)         sum += (byte)progDiaSemana[i][j];
   }
   for (byte i = 0; i < NUMSETORES; i++) sum += progCoberto[i];
-  sum += progModoBomba + progChuva + progPrevisao + progFuncionamento + lastRunDay;
+  sum += progModoBomba + progPrevisao + progFuncionamento + lastRunDay;
   for (int i = 0; slaveIP[i]; i++) sum += (byte)slaveIP[i];
   for (int i = 0; caixaIP[i]; i++) sum += (byte)caixaIP[i];
   return sum;
@@ -444,7 +464,6 @@ void gravaConfig() {
   prefs.putBytes("dias",      progDiaSemana,   sizeof(progDiaSemana));
   prefs.putBytes("coberto",   progCoberto,     sizeof(progCoberto));
   prefs.putUChar("modoBomba", progModoBomba);
-  prefs.putUChar("chuva",     progChuva);
   prefs.putUChar("previsao",  progPrevisao);
   prefs.putUChar("funcmnt",   progFuncionamento);
   prefs.putUChar("lastDay",   lastRunDay);
@@ -461,7 +480,7 @@ void leConfig() {
   memset(progTempoSetor,  0, sizeof(progTempoSetor));
   memset(progDiaSemana,   0, sizeof(progDiaSemana));
   memset(progCoberto,     0, sizeof(progCoberto));
-  progModoBomba = 0;  progChuva = 0;  progPrevisao = 0;
+  progModoBomba = 0;  progPrevisao = 0;
   progFuncionamento = 0;  lastRunDay = 0;
   strncpy(slaveIP, "192.168.1.100", sizeof(slaveIP));
   strncpy(caixaIP, "192.168.1.101", sizeof(caixaIP));
@@ -475,7 +494,6 @@ void leConfig() {
   prefs.getBytes("dias",    progDiaSemana,  sizeof(progDiaSemana));
   prefs.getBytes("coberto", progCoberto,    sizeof(progCoberto));
   progModoBomba     = prefs.getUChar("modoBomba", 0);
-  progChuva         = prefs.getUChar("chuva",     0);
   progPrevisao      = prefs.getUChar("previsao",  0);
   progFuncionamento = prefs.getUChar("funcmnt",   0);
   lastRunDay        = prefs.getUChar("lastDay",   0);
@@ -490,7 +508,7 @@ void leConfig() {
     memset(progTempoSetor,  0, sizeof(progTempoSetor));
     memset(progDiaSemana,   0, sizeof(progDiaSemana));
     memset(progCoberto,     0, sizeof(progCoberto));
-    progModoBomba = 0;  progChuva = 0;  progPrevisao = 0;
+    progModoBomba = 0;  progPrevisao = 0;
     progFuncionamento = 0;  lastRunDay = 0;
     strncpy(slaveIP, "192.168.1.100", sizeof(slaveIP));
     strncpy(caixaIP, "192.168.1.101", sizeof(caixaIP));
@@ -560,8 +578,6 @@ void gravaProg(AsyncWebServerRequest *request) {
 
     if (request->argName(i)=="modoBomba")
       progModoBomba = request->arg(i).toInt();
-    if (request->argName(i)=="chuva")
-      progChuva = request->arg(i).toInt();
     if (request->argName(i)=="previsao")
       progPrevisao = request->arg(i).toInt();
     if (request->argName(i)=="funcionamento")
@@ -586,7 +602,6 @@ String leProgStr() {
   String EoL = ";\r\n";
   
   s = pref+"modoBomba"+suf + String(progModoBomba) + EoL;
-  s += pref+"chuva"+suf + String(progChuva) + EoL;
   s += pref+"previsao"+suf + String(progPrevisao) + EoL;
   s += pref+"funcionamento"+suf+String(progFuncionamento) + EoL;
   
@@ -637,6 +652,7 @@ void testaEmail(AsyncWebServerRequest *request) {
   enviarEmail("E-mail de teste", "Este é um e-mail de teste enviado pela irrigação da Secretoca");
   responseConfirmation(request, "E-mail enviado em background");
 }
+
 
 void writeToThingspeak() {
   static unsigned long int lastTS = 0;
@@ -738,6 +754,11 @@ void loop() {
   processaBomba();
   processaSetores();
 
+  if (waterAlertPending) {
+    waterAlertPending = false;
+    enviarEmail("Alerta de falta de água", "A bomba foi desligada após o tempo de partida pois não foi detectado fluxo de água.");
+  }
+
   masterPump =quandoDesligarBomba !=0;
 
   static unsigned lastCheckTime = 0;
@@ -772,14 +793,19 @@ void loop() {
         if (progHora[i] == NTPHour() &&
             progMin[i]  == NTPMinute()) {
           subject = "programa " + String(i+1);
-          byte u = progChuva  ? progChuva - 1 : 0;
-          byte p = progPrevisao ? progPrevisao - 1 : 0;
-          
-          if (u + p < 2 && progFuncionamento==0) {
+          // 0=automático, 1=alta(cancela sempre), 2=baixa(nunca cancela)
+          bool skipByForecast;
+          switch (progPrevisao) {
+            case 1:  skipByForecast = true; break;
+            case 2:  skipByForecast = false; break;
+            default: skipByForecast = (rainForecast > 5.0f); break;
+          }
+
+          if (!skipByForecast && progFuncionamento==0) {
             Serial.print("Iniciando programa ");
             Serial.println(i+1);
             subject += " - " + programa_(NULL, 0,i+1);
-            body = subject +  "  (umidade=" + String(u) + " e previsão=" + String(p) + ")<br>";
+            body = subject + "  (rainForecast=" + String(rainForecast,1) + ")<br>";
             if (progModoBomba==0 || progModoBomba==2)
               body += "Bomba utilizada: poço";
             else
@@ -795,7 +821,10 @@ void loop() {
           }   
           else {
             subject += " dispensado";
-            body = subject +  "  (Chuva desde o meio dia = " + String(u) + " e previsão=" + String(p) + ")";
+            const char* motivo = progPrevisao==1 ? "previsão: alta (fixo)" :
+                                  progPrevisao==2 ? "nunca cancela (baixa)" :
+                                  "previsão automática";
+            body = subject + "  (" + motivo + ", rainForecast=" + String(rainForecast,1) + ")";
           }
           enviarEmail(subject, body);
           break;
