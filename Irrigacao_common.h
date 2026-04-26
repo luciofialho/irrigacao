@@ -1,8 +1,5 @@
 // Lucio To-do Todo
-// tratar coberto: ligar programa mesmo com chuva para esses cas
-// tratar desativado até dia xx
-// informar questão da previsão de chuva para afinarmos o programa
-// está dando erro de mismatch de tamanho de pacote. tentar colocar pacotes sem tamanho
+// tratar coberto: ligar programa mesmo com chuva para esses casos
 
 #include <Arduino.h>
 #include <Adafruit_GFX.h>

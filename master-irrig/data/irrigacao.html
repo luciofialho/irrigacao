@@ -157,6 +157,15 @@ function ProgramaButtonVisibility(visible) {
   } 
 }
 
+function maskHHMM(el) {
+  var raw = el.value.replace(/\D/g, '').substring(0, 4);
+  var h = raw.substring(0, 2);
+  var m = raw.substring(2, 4);
+  if (h.length == 2 && parseInt(h) > 23) h = '23';
+  if (m.length == 2 && parseInt(m) > 59) m = '59';
+  el.value = m.length > 0 ? h + ':' + m : h;
+}
+
 </script>
 
 <body onload="{atualizaStatus();};"> </body>
@@ -212,7 +221,7 @@ function ProgramaButtonVisibility(visible) {
         for (var i=1;i<=nProg;i++) {
           document.write('<tr>');
           document.write('  <td>P '+i+'</td>');
-          document.write('  <td><input type="text" id="inicioP'+i+'" name="inicioP'+i+'" maxlength="5" size="5" placeholder="HH:MM" pattern="[0-2][0-9]:[0-5][0-9]"/></td>');
+          document.write('  <td><input type="text" id="inicioP'+i+'" name="inicioP'+i+'" maxlength="5" size="5" placeholder="HH:MM" oninput="maskHHMM(this)"/></td>');
           for (var j=1;j<=nSet; j++) 
             document.write('  <td><input type="number" id="tempoP'+i+'S'+j+'" name="tempoP'+i+'S'+j+'" min="0" max="30"/> </td>');
 

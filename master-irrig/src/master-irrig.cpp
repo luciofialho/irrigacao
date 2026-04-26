@@ -26,9 +26,9 @@ byte OPEN_SECTORS[]   = {HIGH, HIGH, HIGH, HIGH, HIGH};
 byte CLOSED_SECTORS[] = {LOW,  LOW,  LOW,  LOW,  LOW};
 
 String callStr = 
-      //"http://api.openweathermap.org/data/2.5/forecast?lat=-22.367&lon=-43.183&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json"; // secretario;
+      "http://api.openweathermap.org/data/2.5/forecast?lat=-22.367&lon=-43.183&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json"; // secretario;
       //"http://api.openweathermap.org/data/2.5/forecast?lat=-1.455&lon=-48.502&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json"; // belem
-       "http://api.openweathermap.org/data/2.5/forecast?lat=-25.548&lon=-54.588&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json"; // foz
+      // "http://api.openweathermap.org/data/2.5/forecast?lat=-25.548&lon=-54.588&appid=b847ba98415936c72703f5873c89bcdb&units=metric&mode=json"; // foz
  
 
 #define NUMLOCALSECTORS 5
@@ -74,6 +74,7 @@ byte progCoberto[NUMSETORES];
 byte progModoBomba;
 byte progPrevisao; // 0=automático, 1=alta (cancela), 2=baixa (não cancela)
 byte progFuncionamento;
+unsigned long bloqueioAte = 0; // millis() alvo para auto-desbloqueio; 0 = não armado
 byte progFimMem=0;
 char slaveIP[16] = "192.168.29.191";
 char caixaIP[16]  = "192.168.29.192";
@@ -580,8 +581,10 @@ void gravaProg(AsyncWebServerRequest *request) {
       progModoBomba = request->arg(i).toInt();
     if (request->argName(i)=="previsao")
       progPrevisao = request->arg(i).toInt();
-    if (request->argName(i)=="funcionamento")
+    if (request->argName(i)=="funcionamento") {
       progFuncionamento = request->arg(i).toInt();
+      bloqueioAte = (progFuncionamento == 2) ? millis() + 24UL*3600UL*1000UL : 0;
+    }
   }
   if (ok) {
     gravaConfig();
@@ -774,6 +777,13 @@ void loop() {
   }
 
 
+
+  //--------------------- auto-desbloqueio de 24 horas
+  if (progFuncionamento == 2 && millis() >= bloqueioAte) {
+    progFuncionamento = 0;
+    bloqueioAte = 0;
+    gravaConfig();
+  }
 
   //--------------------- dispara programa
   static byte lastCheck = 0;
