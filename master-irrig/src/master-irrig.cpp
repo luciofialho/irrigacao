@@ -747,6 +747,8 @@ void setup() {
     Serial.println("LittleFS Initialize....ok");
   else 
     Serial.println("LittleFS Initialization...failed");  
+
+  setBuiltinLedPin(33);
 }
 
 void loop() {
@@ -933,9 +935,12 @@ void loop() {
 
 
             
-  //--------------------------------------------- Controle led
+  //--------------------------------------------- Controle led do sensor de fluxo e atualização do OLED
   waterFlow = digitalRead(PIN_WATER_FLOW);
   digitalWrite(PIN_WATER_FLOW_LED, waterFlow);
   ledAsWifiStatus();
   oledHandle();
+
+  ledAsWifiStatus();
+ 
 }
