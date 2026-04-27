@@ -6,6 +6,7 @@
 #include <Wire.h>
 
 #define PIN_BOMBA 32
+#define PIN_STATUS_LED 33
 #define NUMLOCALSECTORS 8
 #define FIRSTLOCALSECTOR 5 // aparentemente subtrai 1
                                        //  6    7     8     9     10   11   12    
@@ -151,8 +152,9 @@ void setup() {
 
   Wire.begin(5, 4);
   oledInitDisplay("SLAVE");
-
-  setBuiltinLedPin(33);
+  setBuiltinLedPin(PIN_STATUS_LED);
+  pinMode(PIN_STATUS_LED, OUTPUT);
+  digitalWrite(PIN_STATUS_LED, LOW);
 }
 
 void loop() {

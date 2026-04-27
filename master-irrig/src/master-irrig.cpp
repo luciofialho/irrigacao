@@ -20,8 +20,9 @@ Adafruit_SSD1306 oled(128, 64, &Wire, -1);
 #define PIN_BOMBA 17
 #define PIN_WATER_FLOW     16
 #define PIN_WATER_FLOW_LED 18
+#define PIN_STATUS_LED    19
 
-byte PIN_SECTORS[]    = {19,  21,  22,  23,  25};     // master
+byte PIN_SECTORS[]    = {33,  32,  26,  25,  23};     // master
 byte OPEN_SECTORS[]   = {HIGH, HIGH, HIGH, HIGH, HIGH};
 byte CLOSED_SECTORS[] = {LOW,  LOW,  LOW,  LOW,  LOW};
 
@@ -748,7 +749,9 @@ void setup() {
   else 
     Serial.println("LittleFS Initialization...failed");  
 
-  setBuiltinLedPin(33);
+  setBuiltinLedPin(PIN_STATUS_LED);
+  pinMode(PIN_STATUS_LED, OUTPUT);
+  digitalWrite(PIN_STATUS_LED, LOW);
 }
 
 void loop() {
