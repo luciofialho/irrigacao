@@ -43,7 +43,7 @@ String callStr =
 #define thingpeakID 1757100
 #define thingspeakKey "FT1AY0G9WHN7KLHE"
 
-const int tempoPartida = 40; //seg
+byte tempoPartida = 40; //seg
 unsigned long int tempoPartidams;
 
 int activeSector;
@@ -91,6 +91,82 @@ unsigned long int EpochMillis;
 unsigned long int nowEpoch=0;
 
 char slaveStatus[128];
+
+enum HttpCommandType {
+  HTTP_CMD_NONE,
+  HTTP_CMD_LIGA_POCO,
+  HTTP_CMD_LIGA_CAIXA,
+  HTTP_CMD_DESLIGA,
+  HTTP_CMD_PROGRAMA
+};
+
+struct PendingHttpCommand {
+  HttpCommandType type;
+  long overrideTempo;
+  int progNum;
+};
+
+PendingHttpCommand pendingHttpCommand = {HTTP_CMD_NONE, 0, 0};
+volatile bool httpCommandPending = false;
+volatile bool httpCommandBusy = false;
+char lastHttpCommandStatus[128] = "nenhum comando HTTP executado";
+unsigned long lastHttpCommandMillis = 0;
+portMUX_TYPE httpCommandMux = portMUX_INITIALIZER_UNLOCKED;
+
+void setLastHttpCommandStatus(const char *status) {
+  portENTER_CRITICAL(&httpCommandMux);
+  strncpy(lastHttpCommandStatus, status, sizeof(lastHttpCommandStatus) - 1);
+  lastHttpCommandStatus[sizeof(lastHttpCommandStatus) - 1] = 0;
+  lastHttpCommandMillis = millis();
+  portEXIT_CRITICAL(&httpCommandMux);
+}
+
+void setLastHttpCommandStatus(const String &status) {
+  char statusBuf[sizeof(lastHttpCommandStatus)];
+  status.toCharArray(statusBuf, sizeof(statusBuf));
+  setLastHttpCommandStatus(statusBuf);
+}
+
+bool queueHttpCommand(HttpCommandType type, long overrideTempo = 0, int progNum = 0) {
+  bool queued = false;
+  portENTER_CRITICAL(&httpCommandMux);
+  if (!httpCommandPending && !httpCommandBusy) {
+    pendingHttpCommand.type = type;
+    pendingHttpCommand.overrideTempo = overrideTempo;
+    pendingHttpCommand.progNum = progNum;
+    httpCommandPending = true;
+    queued = true;
+  }
+  portEXIT_CRITICAL(&httpCommandMux);
+  if (queued)
+    setLastHttpCommandStatus("comando aceito, aguardando execucao");
+  return queued;
+}
+
+void queueHttpCommandOrRespond(AsyncWebServerRequest *request, HttpCommandType type, long overrideTempo, int progNum) {
+  if (queueHttpCommand(type, overrideTempo, progNum))
+    responseConfirmation(request, "Comando aceito. Consulte /cmdstatus para o resultado.");
+  else
+    responseConfirmation(request, "Ja existe um comando HTTP em processamento. Consulte /cmdstatus.");
+}
+
+void handleCmdStatus(AsyncWebServerRequest *request) {
+  char statusBuf[sizeof(lastHttpCommandStatus)];
+  unsigned long statusMillis;
+
+  portENTER_CRITICAL(&httpCommandMux);
+  strncpy(statusBuf, lastHttpCommandStatus, sizeof(statusBuf) - 1);
+  statusBuf[sizeof(statusBuf) - 1] = 0;
+  statusMillis = lastHttpCommandMillis;
+  portEXIT_CRITICAL(&httpCommandMux);
+
+  String resp = String(statusBuf);
+  if (statusMillis != 0)
+    resp += " (" + String((millis() - statusMillis) / 1000UL) + " s)";
+  request->send(200, "text/plain; charset=utf-8", resp);
+}
+
+void processPendingHttpCommand();
 
 void serverHandleRoot(AsyncWebServerRequest *request) {
   File f=LittleFS.open("/irrigacao.html","r");
@@ -169,6 +245,14 @@ String getStatus() {
     status += "OFFLINE";
   else
     status += String(slaveStatus);
+
+  char cmdStatus[sizeof(lastHttpCommandStatus)];
+  portENTER_CRITICAL(&httpCommandMux);
+  strncpy(cmdStatus, lastHttpCommandStatus, sizeof(cmdStatus) - 1);
+  cmdStatus[sizeof(cmdStatus) - 1] = 0;
+  portEXIT_CRITICAL(&httpCommandMux);
+
+  status += "<br><p><p>CMD HTTP:<p>" + String(cmdStatus);
  
   return status;
 }
@@ -180,7 +264,6 @@ bool slaveCmd(int tempoBomba,
 
   bool ok = false;
   
-  HTTPClient http;
 
   Serial.print("tempoBomba = "); Serial.println(tempoBomba); //*************
   
@@ -192,26 +275,31 @@ bool slaveCmd(int tempoBomba,
       callStr += "~0";
   for (byte attempt = 1; attempt <= 5 && !ok; attempt++) {
     if (attempt > 1) {
-      Serial.printf("slaveCmd: aguardando 5s antes da tentativa %d/5...\n", attempt);
-      unsigned long wait = millis();
-      while (millis() - wait < 5000UL) { handle_IOTK(); yield(); }
+      Serial.printf("slaveCmd: aguardando 0.5s antes da tentativa %d/5...\n", attempt);
+      yield();
+      delay(2000);
+      yield();
     }
-    WiFiClient tcpClient;
-    if (tcpClient.connect(slaveIP, TCP_CMD_PORT)) {
-      tcpClient.println(callStr);
-      unsigned long t = millis();
-      while (!tcpClient.available() && millis() < t + 3000) yield();
-      String response = tcpClient.readStringUntil('\n');
-      response.trim();
-      tcpClient.stop();
-      ok = response.startsWith("OK");
-      if (ok)
-        Serial.printf("slaveCmd TCP sucesso (tentativa %d): ", attempt);
-      else
-        Serial.printf("slaveCmd TCP resposta inesperada (tentativa %d): ", attempt);
-      Serial.println(callStr);
-    } else {
-      Serial.printf("slaveCmd TCP: falha na conexão (tentativa %d/5)\n", attempt);
+    { // para forçar destruição das variáveis http e tcpClient antes da próxima tentativa
+      WiFiClient tcpClient;
+      delay(1); // reseta TWDT antes de bloquear no connect
+      if (tcpClient.connect(slaveIP, TCP_CMD_PORT, 1500)) {
+        tcpClient.println(callStr);
+        unsigned long t = millis();
+        while (!tcpClient.available() && millis() < t + 3000) delay(1);
+        String response = tcpClient.readStringUntil('\n');
+        response.trim();
+        tcpClient.stop();
+        delay(1);
+        ok = response.startsWith("OK");
+        if (ok)
+          Serial.printf("slaveCmd TCP sucesso (tentativa %d): ", attempt);
+        else
+          Serial.printf("slaveCmd TCP resposta inesperada (tentativa %d): ", attempt);
+        Serial.println(callStr);
+      } else {
+        Serial.printf("slaveCmd TCP: falha na conexão (tentativa %d/5)\n", attempt);
+      }
     }
   }
   return ok;
@@ -283,30 +371,15 @@ bool lePrevisao() {
 }
 
 void ligaPoco(AsyncWebServerRequest *request) {
-  ativarBomba();
-  slaveCmd(0);
-  responseConfirmation(request, "Ligando bomba do master - sem setor");
+  queueHttpCommandOrRespond(request, HTTP_CMD_LIGA_POCO, 0, 0);
 }
 
 void ligaCaixa(AsyncWebServerRequest *request) {
-  if (slaveCmd(tempoBomba)) {
-    desativarBomba();
-    responseConfirmation(request, "Ligando bomba do slave  - sem setor");
-  }
-  else
-    responseConfirmation(request, "Falha ao comunicar com o slave");
-
+  queueHttpCommandOrRespond(request, HTTP_CMD_LIGA_CAIXA, 0, 0);
 }
 
 void desliga(AsyncWebServerRequest *request) {
-  byte alivio[MAXSETORESDEVICE]={205,0,0,0,0,0};
-  desativarBomba();
-  setores(0,alivio);
-  
-  if (slaveCmd(0))
-    responseConfirmation(request, "Desligando master e slave");
-  else
-    responseConfirmation(request, "Desligando master ---- falha ao comunicar com o slave");
+  queueHttpCommandOrRespond(request, HTTP_CMD_DESLIGA, 0, 0);
 }
 
 String programa_(AsyncWebServerRequest *request, long overrideTempo,int progNum) {
@@ -413,7 +486,7 @@ String programa_(AsyncWebServerRequest *request, long overrideTempo,int progNum)
 }
 
 void comandoSetor(AsyncWebServerRequest *request, byte x) {
-  programa_(request, 0,-x);
+  queueHttpCommandOrRespond(request, HTTP_CMD_PROGRAMA, 0, -x);
 }
 
 void setor(AsyncWebServerRequest *request) { 
@@ -443,7 +516,7 @@ void programa(AsyncWebServerRequest *request) {
   else {    
     int x = request->arg((size_t)0).toInt();
     if (x>=1 && x<=NUMPROGS)
-      programa_(request, 0,x);
+      queueHttpCommandOrRespond(request, HTTP_CMD_PROGRAMA, 0, x);
     else {
       Serial.print(request->arg((size_t)0));
       Serial.println(" não é um programa válido");
@@ -453,7 +526,67 @@ void programa(AsyncWebServerRequest *request) {
 }
 
 void progRapido(AsyncWebServerRequest *request) {
-  programa_(request, 1,1);
+  queueHttpCommandOrRespond(request, HTTP_CMD_PROGRAMA, 1, 1);
+}
+
+void processPendingHttpCommand() {
+  PendingHttpCommand cmd;
+
+  portENTER_CRITICAL(&httpCommandMux);
+  if (!httpCommandPending || httpCommandBusy) {
+    portEXIT_CRITICAL(&httpCommandMux);
+    return;
+  }
+  cmd = pendingHttpCommand;
+  httpCommandPending = false;
+  httpCommandBusy = true;
+  portEXIT_CRITICAL(&httpCommandMux);
+
+  setLastHttpCommandStatus("processando comando HTTP");
+
+  String result;
+  switch (cmd.type) {
+    case HTTP_CMD_LIGA_POCO:
+      ativarBomba();
+      slaveCmd(0);
+      result = "Ligando bomba do master - sem setor";
+      break;
+
+    case HTTP_CMD_LIGA_CAIXA:
+      if (slaveCmd(tempoBomba)) {
+        desativarBomba();
+        result = "Ligando bomba do slave - sem setor";
+      } else
+        result = "Falha ao comunicar com o slave";
+      break;
+
+    case HTTP_CMD_DESLIGA: {
+      byte alivio[MAXSETORESDEVICE]={205,0,0,0,0,0};
+      desativarBomba();
+      setores(0,alivio);
+      if (slaveCmd(0))
+        result = "Desligando master e slave";
+      else
+        result = "Desligando master - falha ao comunicar com o slave";
+      break;
+    }
+
+    case HTTP_CMD_PROGRAMA:
+      result = programa_(NULL, cmd.overrideTempo, cmd.progNum);
+      break;
+
+    default:
+      result = "Nenhum comando HTTP pendente";
+      break;
+  }
+
+  portENTER_CRITICAL(&httpCommandMux);
+  httpCommandBusy = false;
+  portEXIT_CRITICAL(&httpCommandMux);
+
+  setLastHttpCommandStatus(result);
+  Serial.print("Comando HTTP concluido: ");
+  Serial.println(result);
 }
 
 uint16_t computeConfigChecksum() {
@@ -464,7 +597,7 @@ uint16_t computeConfigChecksum() {
     for (byte j = 0; j < 7; j++)         sum += (byte)progDiaSemana[i][j];
   }
   for (byte i = 0; i < NUMSETORES; i++) sum += progCoberto[i];
-  sum += progModoBomba + progPrevisao + progFuncionamento + lastRunDay;
+  sum += progModoBomba + progPrevisao + progFuncionamento + lastRunDay + tempoPartida;
   for (int i = 0; slaveIP[i]; i++) sum += (byte)slaveIP[i];
   for (int i = 0; caixaIP[i]; i++) sum += (byte)caixaIP[i];
   return sum;
@@ -484,6 +617,7 @@ void gravaConfig() {
   prefs.putUChar("lastDay",   lastRunDay);
   prefs.putString("slaveIP",  slaveIP);
   prefs.putString("caixaIP",  caixaIP);
+  prefs.putUChar("tPartida",  tempoPartida);
   prefs.putUShort("csum",     computeConfigChecksum());
   prefs.end();
 }
@@ -514,6 +648,7 @@ void leConfig() {
   lastRunDay        = prefs.getUChar("lastDay",   0);
   prefs.getString("slaveIP", slaveIP, sizeof(slaveIP));
   prefs.getString("caixaIP", caixaIP, sizeof(caixaIP));
+  tempoPartida = prefs.getUChar("tPartida", 40);
   prefs.end();
 
   if (storedCsum != computeConfigChecksum()) {
@@ -527,6 +662,7 @@ void leConfig() {
     progFuncionamento = 0;  lastRunDay = 0;
     strncpy(slaveIP, "192.168.1.100", sizeof(slaveIP));
     strncpy(caixaIP, "192.168.1.101", sizeof(caixaIP));
+    tempoPartida = 40;
   } else {
     Serial.println("Config carregada do NVS com sucesso");
   }
@@ -538,7 +674,12 @@ void handleConfig(AsyncWebServerRequest *request) {
       request->arg("slaveIP").toCharArray(slaveIP, sizeof(slaveIP));
     if (request->hasArg("caixaIP"))
       request->arg("caixaIP").toCharArray(caixaIP, sizeof(caixaIP));
+    if (request->hasArg("tempoPartida")) {
+      int v = request->arg("tempoPartida").toInt();
+      if (v > 0 && v <= 255) tempoPartida = (byte)v;
+    }
     gravaConfig();
+    tempoPartidams = (tempoPartida * 1000L) - LACKOFFLOW_TIMEOUT_MS;
     request->send(200, "text/html; charset=utf-8",
       "<html><body><p>Configuração salva!</p><a href='/config'>Voltar</a></body></html>");
   } else {
@@ -546,6 +687,7 @@ void handleConfig(AsyncWebServerRequest *request) {
       "<form method='POST' action='/config'>"
       "<p><label>IP do Slave: <input type='text' name='slaveIP' value='" + String(slaveIP) + "'></label></p>"
       "<p><label>IP da Caixa: <input type='text' name='caixaIP' value='" + String(caixaIP) + "'></label></p>"
+      "<p><label>Tempo de partida (seg): <input type='number' name='tempoPartida' value='" + String(tempoPartida) + "' min='1' max='255'></label></p>"
       "<p><input type='submit' value='Salvar'></p>"
       "</form></body></html>";
     request->send(200, "text/html; charset=utf-8", html);
@@ -734,6 +876,7 @@ void setup() {
   server.on("/leProg",leProg);
   server.on("/testaemail",testaEmail);
   server.on("/config", HTTP_ANY, handleConfig);
+  server.on("/cmdstatus", HTTP_GET, handleCmdStatus);
 
   leConfig();
 
@@ -756,6 +899,7 @@ void setup() {
 
 void loop() {
   handle_IOTK();
+  processPendingHttpCommand();
 
   // Recebe status do slave via TCP
   WiFiClient statusClient = tcpStatusServer.available();
